@@ -12,17 +12,13 @@ class RecipeApp extends StatefulWidget {
 }
 
 class _RecipeAppState extends State<RecipeApp> {
-  String currentScreen = "recipes-screen";
+  String currentScreen = "recipes-screen"; //
 
-  // selectedRatings is initially filled with empty strings because the rating is not yet given.
-  List<String> selectedRatings = List.filled(
-    recipes.length,
-    "",
-  );
+  List<String> selectedRatings = List.filled(recipes.length, "");
 
   String topRecipeName() {
     int bestValue = -1;
-    String bestName = "";
+    String bestName = "None";
 
     for (int i = 0; i < recipes.length; i++) {
       if (selectedRatings[i].isNotEmpty) {
@@ -34,27 +30,60 @@ class _RecipeAppState extends State<RecipeApp> {
       }
     }
     return bestName;
+  } //
+
+  double get averageRating {
+    int total = 0;
+    int count = 0;
+    for (var rating in selectedRatings) {
+      if (rating.isNotEmpty) {
+        total += emojiToValue[rating]!;
+        count++;
+      }
+    }
+    if (count == 0) return 0.0;
+    return total / count;
+  }
+
+  void _selectRating(int index, String rating) {
+    setState(() {
+      selectedRatings[index] = rating;
+    });
+  }
+
+  void _submit() {
+    setState(() {
+      currentScreen = "result-screen";
+    });
   }
 
   void _restart() {
     setState(() {
       selectedRatings = List.filled(recipes.length, "");
-      currentScreen = "recipes-screen";
+      currentScreen = "recipes-screen"; //
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget? screenWidget;
+    Widget screenWidget;
+
+    if (currentScreen == "recipes-screen") {
+      screenWidget = RecipesScreen(
+        onSelectRating: _selectRating,
+        onSubmit: _submit,
+      );
+    } else {
+      screenWidget = ResultScreen(
+        averageRating: averageRating,
+        topRecipeName: topRecipeName(),
+        onRestart: _restart,
+      );
+    }
 
     return Scaffold(
-      body: screenWidget,
-      backgroundColor: const Color.fromARGB(
-        255,
-        73,
-        168,
-        122,
-      ),
+      body: SafeArea(child: screenWidget),
+      backgroundColor: const Color.fromARGB(255, 73, 168, 122), //
     );
   }
 }
